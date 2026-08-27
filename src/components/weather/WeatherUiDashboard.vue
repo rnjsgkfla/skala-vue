@@ -275,7 +275,7 @@ onMounted(loadWeather)
             {{ finalMode ? '도시 날씨 찾기' : '🌤️ Weather UI Dashboard' }}
           </h3>
           <p>
-            {{ finalMode ? '궁금한 도시를 검색하거나 자주 보는 도시를 저장해 보세요.' : '실시간 날씨와 대기질을 UI 컴포넌트로 확인합니다.' }}
+            {{ finalMode ? '궁금한 도시를 검색하거나 자주 보는 도시를 즐겨찾기 해 보세요.' : '실시간 날씨와 대기질을 UI 컴포넌트로 확인합니다.' }}
           </p>
         </div>
         <UnitToggler />
@@ -293,7 +293,7 @@ onMounted(loadWeather)
           </el-input>
         </el-col>
         <el-col :xs="24" :sm="10" class="filter-column">
-          <el-switch v-model="onlyHotCities" :active-text="`더운 도시만 (${hotCityCount})`" />
+          <el-switch v-model="onlyHotCities" :active-text="`25℃ 이상 도시만 (${hotCityCount})`" />
         </el-col>
       </el-row>
 
@@ -334,7 +334,7 @@ onMounted(loadWeather)
       <div class="section-heading favorite-heading">
         <div>
           <h3 id="favorite-heading">즐겨찾는 도시</h3>
-          <span>자주 확인하는 도시를 위에서 바로 열어볼 수 있습니다.</span>
+          <span>자주 확인해야 하는 도시를 즐겨찾기 하시면 이곳에서 바로 확인 가능합니다.</span>
         </div>
         <span class="favorite-count">{{ favoriteWeatherList.length }}곳</span>
       </div>

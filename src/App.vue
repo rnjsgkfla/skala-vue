@@ -36,7 +36,7 @@ const practiceLinks = [
       <RouterView />
     </main>
 
-    <footer class="app-footer">Vue 3 · Pinia · Axios · Element Plus · OpenWeather · Open-Meteo</footer>
+    <footer class="app-footer">판교캠퍼스 P106 권하림 - SKALA Vue.js Weather 실습</footer>
   </div>
 </template>
 
@@ -49,9 +49,9 @@ const practiceLinks = [
   position: sticky;
   z-index: 100;
   top: 0;
-  color: #ffffff;
-  background: rgba(15, 23, 42, 0.96);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  color: #0f172a;
+  background: rgba(56, 189, 248, 0.96);
+  border-bottom: 1px solid #0ea5e9;
   backdrop-filter: blur(14px);
 }
 
@@ -69,7 +69,7 @@ const practiceLinks = [
   flex: 0 0 auto;
   align-items: center;
   gap: 10px;
-  color: #ffffff;
+  color: #0f172a;
   text-decoration: none;
 }
 
@@ -79,7 +79,7 @@ const practiceLinks = [
   height: 42px;
   place-items: center;
   font-size: 1.3rem;
-  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  background: rgba(255, 255, 255, 0.72);
   border-radius: 13px;
 }
 
@@ -90,7 +90,7 @@ const practiceLinks = [
 
 .brand small {
   margin-top: 2px;
-  color: #94a3b8;
+  color: #075985;
   font-size: 0.66rem;
 }
 
@@ -111,7 +111,7 @@ const practiceLinks = [
   min-height: 48px;
   padding: 7px 9px;
   place-content: center;
-  color: #94a3b8;
+  color: #0c4a6e;
   font-size: 0.7rem;
   text-align: center;
   text-decoration: none;
@@ -120,13 +120,13 @@ const practiceLinks = [
 }
 
 .stage-navigation a b {
-  color: #cbd5e1;
+  color: #075985;
   font-size: 0.78rem;
 }
 
 .stage-navigation a:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .stage-navigation a.router-link-exact-active {
@@ -140,9 +140,9 @@ const practiceLinks = [
 
 .stage-navigation .final-link {
   min-width: 78px;
-  color: #dbeafe;
+  color: #0c4a6e;
   font-weight: 800;
-  background: rgba(37, 99, 235, 0.16);
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .app-content {
