@@ -30,6 +30,11 @@ const filteredWeatherList = computed(() => {
   return result
 })
 
+// 개인 커스터마이징: 원본 목록에서 25도 이상인 도시 개수를 계산합니다.
+const hotCityCount = computed(
+  () => weatherList.value.filter((item) => item.temp >= 25).length,
+)
+
 // 선택 결과의 변화를 명시적으로 감시합니다.
 watch(selectedCityInfo, (newInfo, oldInfo) => {
   console.log(`[watch] 선택 상태 변경: "${oldInfo}" → "${newInfo}"`)
@@ -85,7 +90,7 @@ const clearSearch = () => {
           :checked="onlyHotCities"
           @change="(event) => (onlyHotCities = event.target.checked)"
         />
-        25도 이상인 도시만 보기
+        25도 이상인 도시만 보기 ({{ hotCityCount }}개)
       </label>
     </section>
 
