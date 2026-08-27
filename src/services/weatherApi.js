@@ -12,6 +12,11 @@ const airQualityClient = axios.create({
   timeout: 10000,
 })
 
+const geocodingClient = axios.create({
+  baseURL: 'https://geocoding-api.open-meteo.com/v1',
+  timeout: 10000,
+})
+
 export const WEATHER_CITIES = [
   { id: '01', name: '서울', query: 'Seoul,KR' },
   { id: '02', name: '수원', query: 'Suwon,KR' },
@@ -23,16 +28,6 @@ const requireApiKey = () => {
   if (!OPENWEATHER_API_KEY) {
     throw new Error('OpenWeather API 키가 없습니다. .env.local에 VITE_OPENWEATHER_API_KEY를 설정해 주세요.')
   }
-}
-
-const findCity = (cityId) => {
-  const city = WEATHER_CITIES.find((item) => item.id === cityId)
-
-  if (!city) {
-    throw new Error('지원하지 않는 도시입니다.')
-  }
-
-  return city
 }
 
 const openWeatherParams = (query) => ({
@@ -58,8 +53,9 @@ const formatWeatherDescription = (description) => {
 }
 
 const mapCurrentWeather = (city, data) => ({
-  id: city.id,
+  id: String(city.id),
   name: city.name,
+  query: city.query,
   temp: Math.round(data.main.temp),
   status: formatWeatherDescription(data.weather[0]?.description),
   humidity: data.main.humidity,
@@ -79,15 +75,51 @@ export const fetchCurrentWeather = async (city) => {
   return mapCurrentWeather(city, data)
 }
 
+// 다국어 도시 이름을 좌표로 변환한 뒤 OpenWeather에서 현재 날씨를 검색합니다.
+export const fetchWeatherByQuery = async (query) => {
+  requireApiKey()
+
+  const { data: geocodingData } = await geocodingClient.get('/search', {
+    params: {
+      name: query.trim(),
+      count: 1,
+      language: 'ko',
+      format: 'json',
+    },
+  })
+
+  const location = geocodingData.results?.[0]
+
+  if (!location) {
+    throw new Error('입력한 도시를 찾을 수 없습니다. 도시 이름을 다시 확인해 주세요.')
+  }
+
+  const { data } = await openWeatherClient.get('/weather', {
+    params: {
+      lat: location.latitude,
+      lon: location.longitude,
+      appid: OPENWEATHER_API_KEY,
+      units: 'metric',
+      lang: 'kr',
+    },
+  })
+  const city = {
+    id: String(data.id),
+    name: location.name,
+    query: `${data.name},${data.sys.country}`,
+  }
+
+  return mapCurrentWeather(city, data)
+}
+
 // 여러 도시 요청을 병렬 처리해 대시보드 대기 시간을 줄입니다.
 export const fetchWeatherDashboard = async () => {
   return Promise.all(WEATHER_CITIES.map((city) => fetchCurrentWeather(city)))
 }
 
 // OpenWeather 5 day / 3 hour Forecast에서 날짜별 정오와 가장 가까운 값 하나를 선택합니다.
-export const fetchFiveDayForecast = async (cityId) => {
+export const fetchFiveDayForecast = async (city) => {
   requireApiKey()
-  const city = findCity(cityId)
   const { data } = await openWeatherClient.get('/forecast', {
     params: openWeatherParams(city.query),
   })
@@ -156,7 +188,7 @@ export const fetchAirQuality = async (latitude, longitude) => {
 }
 
 export const fetchWeatherDetails = async (city) => {
-  const [forecast, airQuality] = await Promise.all([fetchFiveDayForecast(city.id), fetchAirQuality(city.latitude, city.longitude)])
+  const [forecast, airQuality] = await Promise.all([fetchFiveDayForecast(city), fetchAirQuality(city.latitude, city.longitude)])
 
   return { forecast, airQuality }
 }
@@ -168,6 +200,10 @@ export const getWeatherErrorMessage = (error) => {
 
   if (error.response?.status === 401) {
     return 'OpenWeather API 키를 확인해 주세요.'
+  }
+
+  if (error.response?.status === 404) {
+    return '입력한 도시를 찾을 수 없습니다. 도시 이름을 다시 확인해 주세요.'
   }
 
   if (error.response?.status === 429) {

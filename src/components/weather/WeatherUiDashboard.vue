@@ -23,7 +23,7 @@ import {
 } from 'element-plus'
 
 import UnitToggler from '@/components/weather/UnitToggler.vue'
-import { fetchWeatherDashboard, fetchWeatherDetails, getWeatherErrorMessage } from '@/services/weatherApi'
+import { fetchCurrentWeather, fetchWeatherByQuery, fetchWeatherDashboard, fetchWeatherDetails, getWeatherErrorMessage } from '@/services/weatherApi'
 import { useConfigStore } from '@/stores/configStore'
 import { getWeatherAdviceTypes } from '@/utils/weatherAdvice'
 
@@ -38,7 +38,15 @@ const configStore = useConfigStore()
 
 const loadFavoriteIds = () => {
   try {
-    return JSON.parse(localStorage.getItem('weather-favorite-cities') ?? '[]')
+    return JSON.parse(localStorage.getItem('weather-favorite-cities') ?? '[]').map(String)
+  } catch {
+    return []
+  }
+}
+
+const loadFavoriteCityData = () => {
+  try {
+    return JSON.parse(localStorage.getItem('weather-favorite-city-data') ?? '[]')
   } catch {
     return []
   }
@@ -50,10 +58,12 @@ const onlyHotCities = ref(false)
 const onlyFavoriteCities = ref(false)
 const sortOrder = ref('default')
 const favoriteCityIds = ref(loadFavoriteIds())
+const favoriteCityData = ref(loadFavoriteCityData())
 const selectedCity = ref(null)
 const forecast = ref([])
 const airQuality = ref(null)
 const isLoading = ref(false)
+const isSearchLoading = ref(false)
 const isDetailLoading = ref(false)
 const errorMessage = ref('')
 const detailErrorMessage = ref('')
@@ -114,11 +124,19 @@ const weatherRecommendations = computed(() => {
 
 const isFavorite = (cityId) => favoriteCityIds.value.includes(cityId)
 
+const saveFavoriteCities = () => {
+  localStorage.setItem('weather-favorite-cities', JSON.stringify(favoriteCityIds.value))
+  localStorage.setItem('weather-favorite-city-data', JSON.stringify(favoriteCityData.value))
+}
+
 const toggleFavorite = async (city) => {
   const wasFavorite = isFavorite(city.id)
   favoriteCityIds.value = wasFavorite ? favoriteCityIds.value.filter((id) => id !== city.id) : [...favoriteCityIds.value, city.id]
+  favoriteCityData.value = wasFavorite
+    ? favoriteCityData.value.filter((item) => item.id !== city.id)
+    : [...favoriteCityData.value.filter((item) => item.id !== city.id), { id: city.id, name: city.name, query: city.query }]
 
-  localStorage.setItem('weather-favorite-cities', JSON.stringify(favoriteCityIds.value))
+  saveFavoriteCities()
   ElMessage.success(wasFavorite ? `${city.name}을 즐겨찾기에서 해제했습니다.` : `${city.name}을 즐겨찾기에 추가했습니다.`)
 
   if (!wasFavorite) {
@@ -168,7 +186,11 @@ const loadWeather = async (showFeedback = false) => {
   selectedCity.value = null
 
   try {
-    weatherList.value = await fetchWeatherDashboard()
+    const defaultWeather = await fetchWeatherDashboard()
+    const savedFavoriteResults = await Promise.allSettled(favoriteCityData.value.map((city) => fetchCurrentWeather(city)))
+    const savedFavoriteWeather = savedFavoriteResults.filter((result) => result.status === 'fulfilled').map((result) => result.value)
+
+    weatherList.value = [...defaultWeather, ...savedFavoriteWeather].filter((city, index, cities) => cities.findIndex((item) => item.id === city.id) === index)
     lastUpdatedAt.value = new Date()
 
     if (showFeedback) {
@@ -179,6 +201,38 @@ const loadWeather = async (showFeedback = false) => {
     ElMessage.error('날씨를 불러오지 못했습니다.')
   } finally {
     isLoading.value = false
+  }
+}
+
+const searchCity = async () => {
+  const query = searchQuery.value.trim()
+
+  if (!query || !props.finalMode) return
+
+  const existingCity = weatherList.value.find((city) => city.name.toLowerCase() === query.toLowerCase())
+
+  if (existingCity) {
+    await openDetails(existingCity)
+    return
+  }
+
+  isSearchLoading.value = true
+
+  try {
+    const city = await fetchWeatherByQuery(query)
+    const duplicateCity = weatherList.value.find((item) => item.id === city.id || item.query.toLowerCase() === city.query.toLowerCase())
+
+    if (!duplicateCity) {
+      weatherList.value = [city, ...weatherList.value]
+    }
+
+    searchQuery.value = (duplicateCity ?? city).name
+    ElMessage.success(`${city.name} 날씨를 검색했습니다.`)
+    await openDetails(duplicateCity ?? city)
+  } catch (error) {
+    ElMessage.error(getWeatherErrorMessage(error))
+  } finally {
+    isSearchLoading.value = false
   }
 }
 
@@ -231,8 +285,11 @@ onMounted(loadWeather)
 
       <el-row :gutter="12" align="middle">
         <el-col :xs="24" :sm="14">
-          <el-input v-model="searchQuery" size="large" clearable placeholder="도시 이름으로 검색" aria-label="도시 이름으로 검색">
+          <el-input v-model="searchQuery" size="large" clearable :placeholder="finalMode ? '도시 이름 입력 후 검색' : '도시 이름으로 검색'" aria-label="도시 이름으로 검색" @keyup.enter="searchCity">
             <template #prefix>🔍</template>
+            <template v-if="finalMode" #append>
+              <el-button :loading="isSearchLoading" :disabled="!searchQuery.trim()" aria-label="입력한 도시 날씨 검색" @click="searchCity">검색</el-button>
+            </template>
           </el-input>
         </el-col>
         <el-col :xs="24" :sm="10" class="filter-column">
@@ -356,7 +413,7 @@ onMounted(loadWeather)
       </template>
 
       <el-col v-else :span="24">
-        <el-empty description="현재 조건에 맞는 도시가 없습니다." />
+        <el-empty :description="finalMode && searchQuery ? '목록에 없는 도시라면 검색 버튼을 눌러 API에서 찾아보세요.' : '현재 조건에 맞는 도시가 없습니다.'" />
       </el-col>
     </el-row>
 
