@@ -1,9 +1,12 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
+import { useConfigStore } from '@/stores/configStore'
 
 const route = useRoute()
 const router = useRouter()
+const configStore = useConfigStore()
 
 // API 연동 전까지 상세 페이지에서 사용할 임시 Mock 데이터입니다.
 const mockDetails = {
@@ -39,6 +42,13 @@ const mockDetails = {
 
 const cityData = ref(null)
 
+const displayTemp = computed(() => {
+  if (!cityData.value) return null
+
+  const rawTemp = cityData.value.temp
+  return configStore.unit === 'fahrenheit' ? Math.round((rawTemp * 9) / 5 + 32) : rawTemp
+})
+
 onMounted(() => {
   cityData.value = mockDetails[route.params.cityId] ?? null
 })
@@ -51,7 +61,7 @@ onMounted(() => {
     <div v-if="cityData" class="info-card">
       <h4>📍 {{ cityData.name }}</h4>
       <p>
-        현재 기온: <strong>{{ cityData.temp }}°C</strong>
+        현재 기온: <strong>{{ displayTemp }}{{ configStore.unitSymbol }}</strong>
       </p>
       <p>기상 현황: {{ cityData.status }}</p>
       <p>대기 습도: {{ cityData.humidity }}</p>

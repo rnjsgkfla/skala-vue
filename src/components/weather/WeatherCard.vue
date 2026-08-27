@@ -1,5 +1,9 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+import { useConfigStore } from '@/stores/configStore'
+
+const props = defineProps({
   cityItem: {
     type: Object,
     required: true,
@@ -7,6 +11,19 @@ defineProps({
 })
 
 const emit = defineEmits(['select-card', 'click-detail'])
+
+const configStore = useConfigStore()
+
+// 원본 섭씨 값은 유지하고 화면에 표시할 때만 화씨로 변환합니다.
+const displayTemp = computed(() => {
+  const rawTemp = props.cityItem.temp
+
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32)
+  }
+
+  return rawTemp
+})
 </script>
 
 <template>
@@ -15,7 +32,7 @@ const emit = defineEmits(['select-card', 'click-detail'])
     @click="emit('select-card', `${cityItem.name}이 선택되었습니다.`)"
   >
     <h3>{{ cityItem.name }} ({{ cityItem.status }})</h3>
-    <p>현재 기온: {{ cityItem.temp }}°C</p>
+    <p>현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }}</p>
 
     <span v-if="cityItem.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
     <span v-else class="badge cool">❄️ 선선함 (25도 미만)</span>

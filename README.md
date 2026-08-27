@@ -103,6 +103,32 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 - `src/views/WeatherGuideView.vue`: 개인 추가 이용 안내 화면
 - `src/components/weather/WeatherExercises.vue`: 이전 세 단계 실습 모음
 
+## 05. Pinia Weather Store
+
+### 실습한 내용
+
+- Pinia를 설치하고 `main.js`에서 Pinia 인스턴스를 애플리케이션에 주입했습니다.
+- `configStore`에 온도 단위 `unit` 상태, 단위 기호를 반환하는 `unitSymbol` getter, 단위를 전환하는 `toggleUnit` action을 작성했습니다.
+- `UnitToggler`를 Store 단계 Navigation Bar 오른쪽에 배치해 어느 라우트에서든 단위를 변경할 수 있게 했습니다.
+- `WeatherCard`와 `WeatherDetailView`가 같은 Store 상태를 읽어 메인 카드와 상세 화면의 단위를 함께 변경하도록 했습니다.
+- 원본 날씨 데이터는 섭씨로 유지하고 `computed`에서만 화씨 변환 공식 `(섭씨 × 9 / 5) + 32`를 적용했습니다.
+
+### 개인 커스터마이징
+
+- `unitChangeCount` state로 사용자가 단위를 변경한 횟수를 기록했습니다.
+- `unitLabel` getter로 현재 단위를 `섭씨` 또는 `화씨` 한글 이름으로 표시했습니다.
+- `resetUnit` action을 추가해 단위와 변경 횟수를 초기 상태로 되돌릴 수 있게 했습니다.
+- 단위 변경 후에만 초기화 버튼과 변경 횟수가 나타나도록 `UnitToggler`를 확장했습니다.
+
+### 관련 파일
+
+- `src/stores/configStore.js`: 온도 단위 전역 상태, getters, actions
+- `src/components/weather/UnitToggler.vue`: 단위 변경 및 초기화 UI
+- `src/components/weather/WeatherCard.vue`: Store 단위가 적용된 날씨 카드
+- `src/views/WeatherDetailView.vue`: Store 단위가 적용된 상세 화면
+- `src/App.vue`: Store 단계 Navigation Bar와 `UnitToggler`
+- `src/main.js`: Pinia 인스턴스 주입
+
 ## 프로젝트 실행
 
 ```sh
