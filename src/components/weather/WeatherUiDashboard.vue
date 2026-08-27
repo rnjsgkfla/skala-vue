@@ -25,6 +25,7 @@ import {
 import UnitToggler from '@/components/weather/UnitToggler.vue'
 import { fetchWeatherDashboard, fetchWeatherDetails, getWeatherErrorMessage } from '@/services/weatherApi'
 import { useConfigStore } from '@/stores/configStore'
+import { getWeatherAdviceTypes } from '@/utils/weatherAdvice'
 
 const props = defineProps({
   finalMode: {
@@ -93,13 +94,32 @@ const hottestCity = computed(() => {
   return weatherList.value.reduce((hottest, city) => (!hottest || city.temp > hottest.temp ? city : hottest), null)
 })
 
+const todayForecast = computed(() => forecast.value.find((item) => item.isToday) ?? null)
+
+const weatherRecommendations = computed(() => {
+  if (!todayForecast.value) return []
+
+  return getWeatherAdviceTypes(todayForecast.value).map((type) => {
+    if (type === 'umbrella') {
+      return '오늘 비 예보가 있어요. 외출할 때 우산을 챙기세요.'
+    }
+
+    return `오늘 일교차가 ${todayForecast.value.temperatureRange}℃예요. 가벼운 겉옷을 챙기세요.`
+  })
+})
+
 const isFavorite = (cityId) => favoriteCityIds.value.includes(cityId)
 
-const toggleFavorite = (city) => {
-  favoriteCityIds.value = isFavorite(city.id) ? favoriteCityIds.value.filter((id) => id !== city.id) : [...favoriteCityIds.value, city.id]
+const toggleFavorite = async (city) => {
+  const wasFavorite = isFavorite(city.id)
+  favoriteCityIds.value = wasFavorite ? favoriteCityIds.value.filter((id) => id !== city.id) : [...favoriteCityIds.value, city.id]
 
   localStorage.setItem('weather-favorite-cities', JSON.stringify(favoriteCityIds.value))
-  ElMessage.success(isFavorite(city.id) ? `${city.name}을 즐겨찾기에 추가했습니다.` : `${city.name}을 즐겨찾기에서 해제했습니다.`)
+  ElMessage.success(wasFavorite ? `${city.name}을 즐겨찾기에서 해제했습니다.` : `${city.name}을 즐겨찾기에 추가했습니다.`)
+
+  if (!wasFavorite) {
+    await openDetails(city)
+  }
 }
 
 const formattedLastUpdatedAt = computed(() => {
@@ -175,6 +195,12 @@ const openDetails = async (city) => {
     ElMessage.error('상세 정보를 불러오지 못했습니다.')
   } finally {
     isDetailLoading.value = false
+  }
+}
+
+const selectCity = (city) => {
+  if (props.finalMode) {
+    openDetails(city)
   }
 }
 
@@ -270,12 +296,20 @@ onMounted(loadWeather)
 
       <template v-else-if="filteredWeatherList.length">
         <el-col v-for="city in filteredWeatherList" :key="city.id" :xs="24" :sm="12">
-          <el-card class="weather-ui-card" shadow="hover">
+          <el-card
+            class="weather-ui-card"
+            :class="{ 'clickable-card': finalMode, selected: selectedCity?.id === city.id }"
+            shadow="hover"
+            :role="finalMode ? 'button' : undefined"
+            :tabindex="finalMode ? 0 : undefined"
+            @click="selectCity(city)"
+            @keydown.enter="selectCity(city)"
+          >
             <template #header>
               <div class="card-header">
                 <strong>{{ city.name }}</strong>
                 <div class="card-actions">
-                  <el-button v-if="finalMode" circle text :aria-label="`${city.name} 즐겨찾기 전환`" @click="toggleFavorite(city)">
+                  <el-button v-if="finalMode" circle text :aria-label="`${city.name} 즐겨찾기 전환`" @click.stop="toggleFavorite(city)">
                     {{ isFavorite(city.id) ? '★' : '☆' }}
                   </el-button>
                   <el-tag :type="city.temp >= 25 ? 'danger' : 'primary'" effect="light">
@@ -295,7 +329,7 @@ onMounted(loadWeather)
               <el-descriptions-item label="풍속"> {{ city.windSpeed }}m/s </el-descriptions-item>
             </el-descriptions>
 
-            <el-button class="detail-button" type="primary" plain @click="openDetails(city)"> 예보·대기질 보기 </el-button>
+            <el-button class="detail-button" type="primary" plain @click.stop="openDetails(city)"> 예보·대기질 보기 </el-button>
           </el-card>
         </el-col>
       </template>
@@ -316,34 +350,54 @@ onMounted(loadWeather)
       <el-skeleton v-if="isDetailLoading" :rows="5" animated />
       <el-alert v-else-if="detailErrorMessage" :title="detailErrorMessage" type="error" show-icon :closable="false" />
 
-      <el-row v-else :gutter="18">
-        <el-col :xs="24" :md="16">
-          <h4>5일 예보</h4>
-          <el-table :data="forecast" stripe size="small" empty-text="예보가 없습니다.">
-            <el-table-column label="날짜" min-width="110">
-              <template #default="scope">{{ formatForecastDate(scope.row.date) }}</template>
-            </el-table-column>
-            <el-table-column prop="status" label="날씨" min-width="100" />
-            <el-table-column label="기온" width="82" align="right">
-              <template #default="scope"> {{ displayTemp(scope.row.temp) }}{{ configStore.unitSymbol }} </template>
-            </el-table-column>
-          </el-table>
-        </el-col>
+      <template v-else>
+        <el-alert
+          v-if="finalMode"
+          class="recommendation-alert"
+          :title="`${selectedCity.name} 오늘의 준비 알림`"
+          :type="weatherRecommendations.length ? 'warning' : 'success'"
+          show-icon
+          :closable="false"
+        >
+          <ul v-if="weatherRecommendations.length">
+            <li v-for="message in weatherRecommendations" :key="message">{{ message }}</li>
+          </ul>
+          <p v-else-if="todayForecast">오늘은 비나 10℃ 이상의 큰 일교차 예보가 없습니다.</p>
+          <p v-else>오늘 남은 시간의 예보가 없어 준비 알림을 계산할 수 없습니다.</p>
+          <small v-if="todayForecast">
+            오늘 남은 예보 기준 최저 {{ displayTemp(todayForecast.minTemp) }}{{ configStore.unitSymbol }} · 최고 {{ displayTemp(todayForecast.maxTemp) }}{{ configStore.unitSymbol }}
+          </small>
+        </el-alert>
 
-        <el-col :xs="24" :md="8" class="air-quality-column">
-          <h4>현재 대기질</h4>
-          <div v-if="airQuality" class="air-quality-panel">
-            <el-statistic title="US AQI" :value="airQuality.aqi" />
-            <el-tag :type="airQualityInfo.type" effect="dark">
-              {{ airQualityInfo.label }}
-            </el-tag>
-            <el-descriptions :column="1" size="small" border>
-              <el-descriptions-item label="PM10"> {{ airQuality.pm10 }} ㎍/㎥ </el-descriptions-item>
-              <el-descriptions-item label="PM2.5"> {{ airQuality.pm25 }} ㎍/㎥ </el-descriptions-item>
-            </el-descriptions>
-          </div>
-        </el-col>
-      </el-row>
+        <el-row :gutter="18">
+          <el-col :xs="24" :md="16">
+            <h4>5일 예보</h4>
+            <el-table :data="forecast" stripe size="small" empty-text="예보가 없습니다.">
+              <el-table-column label="날짜" min-width="110">
+                <template #default="scope">{{ formatForecastDate(scope.row.date) }}</template>
+              </el-table-column>
+              <el-table-column prop="status" label="날씨" min-width="100" />
+              <el-table-column label="기온" width="82" align="right">
+                <template #default="scope"> {{ displayTemp(scope.row.temp) }}{{ configStore.unitSymbol }} </template>
+              </el-table-column>
+            </el-table>
+          </el-col>
+
+          <el-col :xs="24" :md="8" class="air-quality-column">
+            <h4>현재 대기질</h4>
+            <div v-if="airQuality" class="air-quality-panel">
+              <el-statistic title="US AQI" :value="airQuality.aqi" />
+              <el-tag :type="airQualityInfo.type" effect="dark">
+                {{ airQualityInfo.label }}
+              </el-tag>
+              <el-descriptions :column="1" size="small" border>
+                <el-descriptions-item label="PM10"> {{ airQuality.pm10 }} ㎍/㎥ </el-descriptions-item>
+                <el-descriptions-item label="PM2.5"> {{ airQuality.pm25 }} ㎍/㎥ </el-descriptions-item>
+              </el-descriptions>
+            </div>
+          </el-col>
+        </el-row>
+      </template>
     </el-card>
   </div>
 </template>
@@ -441,6 +495,21 @@ h4 {
   margin-bottom: 14px;
 }
 
+.clickable-card {
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.clickable-card:hover,
+.clickable-card:focus-visible,
+.clickable-card.selected {
+  border-color: #409eff;
+  outline: none;
+  transform: translateY(-2px);
+}
+
 .card-actions {
   display: flex;
   align-items: center;
@@ -472,6 +541,23 @@ h4 {
 .detail-button {
   width: 100%;
   margin-top: 14px;
+}
+
+.recommendation-alert {
+  margin-bottom: 18px;
+}
+
+.recommendation-alert ul {
+  padding-left: 20px;
+  margin: 4px 0 8px;
+}
+
+.recommendation-alert p {
+  margin: 4px 0 8px;
+}
+
+.recommendation-alert small {
+  color: #64748b;
 }
 
 .air-quality-column {

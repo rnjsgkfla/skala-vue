@@ -93,24 +93,47 @@ export const fetchFiveDayForecast = async (cityId) => {
   })
 
   const dailyForecast = new Map()
+  const cityTimezone = data.city.timezone
+  const cityLocalToday = new Date(Date.now() + cityTimezone * 1000).toISOString().slice(0, 10)
+  const rainConditions = ['Rain', 'Drizzle', 'Thunderstorm']
 
   data.list.forEach((item) => {
-    const [date, time] = item.dt_txt.split(' ')
-    const hour = Number(time.slice(0, 2))
+    const cityLocalDateTime = new Date((item.dt + cityTimezone) * 1000)
+    const date = cityLocalDateTime.toISOString().slice(0, 10)
+    const hour = cityLocalDateTime.getUTCHours()
     const distanceFromNoon = Math.abs(hour - 12)
     const previous = dailyForecast.get(date)
+    const minTemp = Math.min(previous?.minTemp ?? Infinity, item.main.temp_min)
+    const maxTemp = Math.max(previous?.maxTemp ?? -Infinity, item.main.temp_max)
+    const hasRain = Boolean(previous?.hasRain) || rainConditions.includes(item.weather[0]?.main) || Boolean(item.rain?.['3h'])
 
-    if (!previous || distanceFromNoon < previous.distanceFromNoon) {
-      dailyForecast.set(date, {
-        date,
-        distanceFromNoon,
-        temp: Math.round(item.main.temp),
-        status: formatWeatherDescription(item.weather[0]?.description),
-      })
-    }
+    const representative =
+      !previous || distanceFromNoon < previous.distanceFromNoon
+        ? {
+            distanceFromNoon,
+            temp: Math.round(item.main.temp),
+            status: formatWeatherDescription(item.weather[0]?.description),
+          }
+        : previous
+
+    dailyForecast.set(date, {
+      date,
+      distanceFromNoon: representative.distanceFromNoon,
+      temp: representative.temp,
+      status: representative.status,
+      minTemp,
+      maxTemp,
+      hasRain,
+    })
   })
 
-  return [...dailyForecast.values()].slice(0, 5)
+  return [...dailyForecast.values()].slice(0, 5).map((item) => ({
+    ...item,
+    isToday: item.date === cityLocalToday,
+    minTemp: Math.round(item.minTemp),
+    maxTemp: Math.round(item.maxTemp),
+    temperatureRange: Math.round((item.maxTemp - item.minTemp) * 10) / 10,
+  }))
 }
 
 // 별도 외부 API인 Open-Meteo에서 현재 대기질을 조회합니다.
