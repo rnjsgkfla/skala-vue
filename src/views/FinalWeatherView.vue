@@ -9,7 +9,7 @@ import WeatherUiDashboard from '@/components/weather/WeatherUiDashboard.vue'
       <h1>외출 전 날씨 확인 서비스</h1>
       <p class="hero-description">
         도시 이름 입력 후 검색 시 해당 도시의 현재 날씨와 대기질 정보, 5일치 예보를 확인하고 즐겨찾기에 저장할 수 있습니다.<br />
-        네비게이션 바를 클릭해서 단계별 홈페이지 발전 과정도 확인할 수 있습니다.
+        화면 상단의 네비게이션 바를 클릭해서 단계별 홈페이지 발전 과정도 확인할 수 있습니다.
       </p>
     </section>
 
