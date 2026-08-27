@@ -28,7 +28,29 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 ### 관련 파일
 
 - `src/components/weather/WeatherMockup.vue`: Weather Mockup 실습 코드
-- `src/views/WeatherHomeView.vue`: 실습 컴포넌트를 보여주는 페이지
+- `src/views/WeatherHomeView.vue`: 단계별 실습 컴포넌트를 보여주는 페이지
+
+## 02. Weather Composition
+
+### 실습한 내용
+
+- `computed`로 검색어가 포함된 도시만 반환하는 `filteredWeatherList`를 만들었습니다.
+- 검색어가 비어 있으면 전체 도시를 표시하고, 일치하는 도시가 없으면 안내 문구를 표시했습니다.
+- `watch`로 선택 결과의 이전 값과 새로운 값을 감시해 콘솔에 기록했습니다.
+- `watchEffect`로 검색어와 검색 결과 개수를 자동 추적해 콘솔에 기록했습니다.
+- Mockup의 `weatherList`, `searchQuery`, `selectedCityInfo` 상태와 기존 이벤트 기능을 그대로 이어서 사용했습니다.
+
+### 개인 커스터마이징
+
+- `onlyHotCities` 반응형 상태를 추가해 25도 이상인 도시만 볼 수 있도록 했습니다.
+- 검색과 온도 조건을 하나의 `computed`에서 함께 계산하도록 확장했습니다.
+- 온도 필터의 활성화 상태를 `watch`하고, 변경 결과를 상태 표시줄에 안내했습니다.
+- 현재 조건에 맞는 도시 개수를 목록 제목 옆에 표시했습니다.
+
+### 관련 파일
+
+- `src/components/weather/WeatherComposition.vue`: Composition API를 적용한 날씨 실습 코드
+- `src/views/WeatherHomeView.vue`: Mockup과 Composition 실습을 순서대로 보여주는 페이지
 
 ## 프로젝트 실행
 

@@ -1,15 +1,24 @@
 <script setup>
 import WeatherMockup from '@/components/weather/WeatherMockup.vue'
+import WeatherComposition from '@/components/weather/WeatherComposition.vue'
 </script>
 
 <template>
   <main class="weather-home">
     <header class="page-header">
-      <p>SKALA Vue Hands-on · 01</p>
-      <h1>Weather Mockup</h1>
+      <p>SKALA Vue Hands-on</p>
+      <h1>Weather Exercises</h1>
     </header>
 
-    <WeatherMockup />
+    <section class="exercise-stage">
+      <h2><span>01</span> Weather Mockup</h2>
+      <WeatherMockup />
+    </section>
+
+    <section class="exercise-stage">
+      <h2><span>02</span> Weather Composition</h2>
+      <WeatherComposition />
+    </section>
   </main>
 </template>
 
@@ -39,5 +48,33 @@ import WeatherMockup from '@/components/weather/WeatherMockup.vue'
   color: #172033;
   font-size: clamp(2rem, 8vw, 3.5rem);
   letter-spacing: -0.04em;
+}
+
+.exercise-stage {
+  padding: 28px 0;
+  border-top: 1px solid #cbd5e1;
+}
+
+.exercise-stage + .exercise-stage {
+  margin-top: 36px;
+}
+
+.exercise-stage > h2 {
+  width: min(600px, 100%);
+  margin: 0 auto 20px;
+  color: #172033;
+  font-size: 1.35rem;
+}
+
+.exercise-stage > h2 span {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  margin-right: 6px;
+  place-items: center;
+  color: #ffffff;
+  font-size: 0.8rem;
+  background: #2563eb;
+  border-radius: 50%;
 }
 </style>
