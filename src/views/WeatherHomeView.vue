@@ -1,6 +1,7 @@
 <script setup>
 import WeatherMockup from '@/components/weather/WeatherMockup.vue'
 import WeatherComposition from '@/components/weather/WeatherComposition.vue'
+import WeatherParent from '@/components/weather/WeatherParent.vue'
 </script>
 
 <template>
@@ -18,6 +19,11 @@ import WeatherComposition from '@/components/weather/WeatherComposition.vue'
     <section class="exercise-stage">
       <h2><span>02</span> Weather Composition</h2>
       <WeatherComposition />
+    </section>
+
+    <section class="exercise-stage">
+      <h2><span>03</span> Weather Component</h2>
+      <WeatherParent />
     </section>
   </main>
 </template>

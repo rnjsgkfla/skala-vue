@@ -46,6 +46,32 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 - `src/components/weather/WeatherComposition.vue`: Composition API를 적용한 날씨 실습 코드
 - `src/views/WeatherHomeView.vue`: Mockup과 Composition 실습을 순서대로 보여주는 페이지
 
+## 03. Weather Component
+
+### 실습한 내용
+
+- 기존 Composition 기능을 유지하면서 화면을 역할에 따라 여러 컴포넌트로 분리했습니다.
+- `WeatherParent`가 날씨 데이터와 검색, 선택, 온도 필터 상태 및 계산 로직을 관리합니다.
+- `BaseDashboardCard`의 `<slot>`에 검색 영역과 날씨 목록을 각각 전달해 공통 디자인을 재사용했습니다.
+- `SearchBar`는 검색어를 `props`로 받고 `update-query`, `clear-query` 이벤트를 부모로 전달합니다.
+- `WeatherCard`는 도시 객체를 `props`로 받고 `select-card`, `click-detail` 이벤트를 부모로 전달합니다.
+- 각 컴포넌트의 디자인을 `<style scoped>`로 분리했습니다.
+
+### 개인 커스터마이징
+
+- Composition 단계에서 추가한 온도 필터를 `TemperatureFilter` 컴포넌트로 별도 분리했습니다.
+- 부모의 `onlyHotCities`, `hotCityCount`를 `props`로 전달하고, 체크 상태 변경은 `update-only-hot` 이벤트로 부모에 전달했습니다.
+- Mockup, Composition, Component 결과를 한 페이지에 순서대로 표시해 구조가 발전하는 과정을 비교할 수 있게 했습니다.
+
+### 관련 파일
+
+- `src/components/weather/WeatherParent.vue`: 상태와 로직을 관리하는 부모 컴포넌트
+- `src/components/weather/BaseDashboardCard.vue`: 슬롯 기반 공통 레이아웃
+- `src/components/weather/SearchBar.vue`: 검색어 입력 컴포넌트
+- `src/components/weather/WeatherCard.vue`: 도시별 날씨 카드 컴포넌트
+- `src/components/weather/TemperatureFilter.vue`: 개인 추가 온도 필터 컴포넌트
+- `src/views/WeatherHomeView.vue`: 세 단계의 실습을 순서대로 보여주는 페이지
+
 ## 프로젝트 실행
 
 ```sh
