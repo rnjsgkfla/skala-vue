@@ -194,6 +194,40 @@ OpenWeather Forecast API는 하루에 한 건이 아니라 3시간 간격의 예
 - `src/App.vue`: 여섯 번째 Axios 실습 영역
 - `.env.example`: API 키 환경 변수 예시
 
+## 07. Weather UI Library
+
+### 실습한 내용
+
+- 외부 UI 라이브러리로 Element Plus를 선택하고 필요한 컴포넌트만 개별로 불러와 적용했습니다.
+- Axios 단계의 실시간 날씨, 5일 예보, 대기질 기능을 유지하면서 화면을 Element Plus 컴포넌트로 구성했습니다.
+- 카드, 입력창, 스위치, 버튼을 사용해 검색, 온도 필터, 새로고침 UI를 작성했습니다.
+- 스켈레톤, 알림, 빈 결과 화면, 토스트 메시지로 로딩과 요청 결과를 명확하게 안내했습니다.
+- 표, 설명 목록, 통계, 태그를 사용해 예보와 대기질 데이터를 구조적으로 표시했습니다.
+
+### 개인 커스터마이징
+
+- 화면 크기에 따라 카드와 상세 정보의 열 배치가 달라지는 반응형 레이아웃을 적용했습니다.
+- 날씨 카드에 실시간 습도와 풍속을 추가하고, 기온에 따라 더움·선선함 태그 색상이 달라지도록 했습니다.
+- 상세보기 성공과 API 오류를 토스트 메시지로 즉시 확인할 수 있게 했습니다.
+- 기존 Weather Store의 섭씨·화씨 전환 기능을 UI Library 화면에서도 재사용했습니다.
+- OpenWeather의 5일 예보와 별도 외부 API인 Open-Meteo의 대기질 데이터를 하나의 상세 카드에서 비교할 수 있게 했습니다.
+
+### 적용한 Element Plus 컴포넌트
+
+| 컴포넌트 | 활용 영역 |
+| --- | --- |
+| Card, Row, Col | 날씨 카드와 반응형 레이아웃 |
+| Input, Switch, Button | 도시 검색, 온도 필터, 새로고침 |
+| Skeleton, Alert, Empty, Message | 로딩, 오류, 빈 결과, 완료 안내 |
+| Table, Descriptions, Statistic, Tag | 5일 예보, 현재 날씨, 대기질 정보 |
+
+### 관련 파일
+
+- `src/components/weather/WeatherUiDashboard.vue`: Element Plus를 적용한 날씨 대시보드
+- `src/main.js`: Element Plus 공통 스타일 등록
+- `src/App.vue`: 일곱 번째 UI Library 실습 영역
+- `package.json`: Element Plus 의존성
+
 ## 프로젝트 실행
 
 ```sh
