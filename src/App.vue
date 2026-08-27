@@ -24,7 +24,7 @@ import UnitToggler from '@/components/weather/UnitToggler.vue'
   </section>
 
   <section class="store-stage">
-    <h2><span>05</span> Pinia Weather Store</h2>
+    <h2><span>05</span> Weather Store</h2>
 
     <div class="router-shell">
       <nav class="navigation-bar store-navigation" aria-label="날씨 Store 서비스 메뉴">

@@ -103,7 +103,7 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 - `src/views/WeatherGuideView.vue`: 개인 추가 이용 안내 화면
 - `src/components/weather/WeatherExercises.vue`: 이전 세 단계 실습 모음
 
-## 05. Pinia Weather Store
+## 05. Weather Store
 
 ### 실습한 내용
 
