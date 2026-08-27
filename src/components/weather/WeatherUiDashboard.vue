@@ -83,6 +83,10 @@ const filteredWeatherList = computed(() => {
 
 const hotCityCount = computed(() => weatherList.value.filter((city) => city.temp >= 25).length)
 
+const favoriteWeatherList = computed(() => {
+  return favoriteCityIds.value.map((cityId) => weatherList.value.find((city) => city.id === cityId)).filter(Boolean)
+})
+
 const averageTemperature = computed(() => {
   if (!weatherList.value.length) return 0
 
@@ -208,18 +212,16 @@ onMounted(loadWeather)
 </script>
 
 <template>
-  <div class="ui-dashboard">
+  <div class="ui-dashboard" :class="{ 'final-dashboard': finalMode }">
     <el-card class="control-card" shadow="never">
       <div class="dashboard-header">
         <div>
-          <el-tag type="primary" effect="plain" round>
-            {{ finalMode ? 'Final Application' : 'Element Plus' }}
-          </el-tag>
+          <el-tag v-if="!finalMode" type="primary" effect="plain" round>Element Plus</el-tag>
           <h3>
-            {{ finalMode ? '🌤️ My Weather Center' : '🌤️ Weather UI Dashboard' }}
+            {{ finalMode ? '도시 날씨 찾기' : '🌤️ Weather UI Dashboard' }}
           </h3>
           <p>
-            {{ finalMode ? '즐겨찾기와 정렬로 나만의 날씨를 관리합니다.' : '실시간 날씨와 대기질을 UI 컴포넌트로 확인합니다.' }}
+            {{ finalMode ? '궁금한 도시를 검색하거나 자주 보는 도시를 저장해 보세요.' : '실시간 날씨와 대기질을 UI 컴포넌트로 확인합니다.' }}
           </p>
         </div>
         <UnitToggler />
@@ -270,6 +272,25 @@ onMounted(loadWeather)
         </el-card>
       </el-col>
     </el-row>
+
+    <section v-if="finalMode && !isLoading" class="favorite-section" aria-labelledby="favorite-heading">
+      <div class="section-heading favorite-heading">
+        <div>
+          <h3 id="favorite-heading">즐겨찾는 도시</h3>
+          <span>자주 확인하는 도시를 위에서 바로 열어볼 수 있습니다.</span>
+        </div>
+        <span class="favorite-count">{{ favoriteWeatherList.length }}곳</span>
+      </div>
+
+      <div v-if="favoriteWeatherList.length" class="favorite-list">
+        <button v-for="city in favoriteWeatherList" :key="city.id" type="button" class="favorite-city" :class="{ selected: selectedCity?.id === city.id }" @click="openDetails(city)">
+          <span class="favorite-city-name">★ {{ city.name }}</span>
+          <strong>{{ displayTemp(city.temp) }}{{ configStore.unitSymbol }}</strong>
+          <small>{{ city.status }}</small>
+        </button>
+      </div>
+      <p v-else class="favorite-empty">아래 도시 카드의 별을 누르면 이곳에 바로 표시됩니다.</p>
+    </section>
 
     <div class="section-heading">
       <div>
@@ -342,8 +363,8 @@ onMounted(loadWeather)
     <el-card v-if="selectedCity" class="detail-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <strong>📅 {{ selectedCity.name }} 상세 정보</strong>
-          <el-tag effect="plain">OpenWeather + Open-Meteo</el-tag>
+          <strong>{{ selectedCity.name }} 상세 정보</strong>
+          <el-tag v-if="!finalMode" effect="plain">OpenWeather + Open-Meteo</el-tag>
         </div>
       </template>
 
@@ -408,6 +429,10 @@ onMounted(loadWeather)
   margin: 0 auto;
 }
 
+.final-dashboard {
+  width: min(820px, 100%);
+}
+
 .control-card,
 .detail-card,
 .weather-ui-card {
@@ -461,8 +486,7 @@ onMounted(loadWeather)
 
 .summary-card {
   margin-bottom: 12px;
-  border: 0;
-  background: linear-gradient(145deg, #eff6ff, #ffffff);
+  background: #ffffff;
 }
 
 .summary-card :deep(.el-card__body) {
@@ -478,8 +502,79 @@ onMounted(loadWeather)
 }
 
 .summary-card strong {
-  color: #1d4ed8;
+  color: #303133;
   font-size: 1.05rem;
+}
+
+.favorite-section {
+  padding: 18px;
+  margin: 8px 0 24px;
+  background: #fffdf7;
+  border: 1px solid #f1e5c8;
+  border-radius: 10px;
+}
+
+.favorite-heading {
+  margin: 0 0 12px;
+}
+
+.favorite-count {
+  color: #8a6424 !important;
+  font-weight: 700;
+}
+
+.favorite-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.favorite-city {
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+  color: #303133;
+  font: inherit;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.favorite-city:hover,
+.favorite-city:focus-visible,
+.favorite-city.selected {
+  border-color: #d8a33f;
+  outline: none;
+}
+
+.favorite-city-name {
+  color: #8a6424;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.favorite-city strong {
+  font-size: 1.3rem;
+}
+
+.favorite-city small {
+  overflow: hidden;
+  color: #606266;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.favorite-empty {
+  padding: 14px;
+  margin: 0;
+  color: #909399;
+  font-size: 0.82rem;
+  text-align: center;
+  background: #ffffff;
+  border: 1px dashed #dcdfe6;
+  border-radius: 8px;
 }
 
 .section-heading {
@@ -497,9 +592,7 @@ h4 {
 
 .clickable-card {
   cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
 .clickable-card:hover,
@@ -507,7 +600,6 @@ h4 {
 .clickable-card.selected {
   border-color: #409eff;
   outline: none;
-  transform: translateY(-2px);
 }
 
 .card-actions {
