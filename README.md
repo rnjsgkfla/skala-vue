@@ -2,6 +2,49 @@
 
 Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, 각 단계에서 조금씩 기능을 발전시키는 프로젝트입니다.
 
+## 프로젝트 개요
+
+| 구분 | 내용 |
+| --- | --- |
+| 수업명 | Front-framework: Vue.js |
+| 수업 기간 | 2026.08.24 ~ 08.27 |
+| 작성자 | P106 권하림 |
+
+## 프로젝트 구조
+
+```text
+skala-vue/
+├── src/
+│   ├── assets/                     # 전역 CSS와 정적 리소스
+│   ├── components/
+│   │   ├── common/                 # 공통 컴포넌트 영역
+│   │   └── weather/                # 단계별 날씨 실습 컴포넌트
+│   │       ├── WeatherMockup.vue
+│   │       ├── WeatherComposition.vue
+│   │       ├── WeatherParent.vue
+│   │       ├── WeatherAxiosDashboard.vue
+│   │       ├── WeatherUiDashboard.vue
+│   │       └── UnitToggler.vue
+│   ├── router/
+│   │   └── index.js                # 최종 화면과 단계별 화면 경로
+│   ├── services/
+│   │   └── weatherApi.js           # 날씨·대기질·도시 검색 API 요청
+│   ├── stores/
+│   │   └── configStore.js          # Pinia 날씨 단위 상태 관리
+│   ├── utils/
+│   │   └── weatherAdvice.js        # 우산·겉옷 준비 안내 계산
+│   ├── views/
+│   │   ├── FinalWeatherView.vue    # 배포 시 표시되는 최종 화면
+│   │   ├── WeatherPracticeView.vue # 1~7단계 실습 화면
+│   │   └── NotFoundView.vue        # 잘못된 경로 안내 화면
+│   ├── App.vue                     # 공통 네비게이션과 레이아웃
+│   └── main.js                     # Vue 애플리케이션 진입점
+├── .env.example                    # 환경 변수 작성 예시
+├── eslint.config.js                # ESLint 설정
+├── package.json                    # 의존성과 실행 명령
+└── vite.config.js                  # Vite 설정
+```
+
 ## 01. Weather Mockup
 
 ### 실습한 내용
