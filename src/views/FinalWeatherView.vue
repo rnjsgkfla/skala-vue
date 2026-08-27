@@ -5,9 +5,12 @@ import WeatherUiDashboard from '@/components/weather/WeatherUiDashboard.vue'
 <template>
   <div class="final-view">
     <section class="hero-section">
-      <p class="today-label">오늘의 날씨</p>
-      <h1>외출 전에 날씨를 확인해 보세요.</h1>
-      <p class="hero-description">현재 날씨와 5일 예보, 대기질을 확인하고 자주 보는 도시는 즐겨찾기에 저장할 수 있습니다.</p>
+      <p class="today-label">P106 권하림 Vue.js 최종 실습 과제</p>
+      <h1>외출 전 날씨 확인 서비스</h1>
+      <p class="hero-description">
+        도시 이름 입력 후 검색 시 해당 도시의 현재 날씨와 대기질 정보, 5일치 예보를 확인하고 즐겨찾기에 저장할 수 있습니다.<br />
+        네비게이션 바를 클릭해서 단계별 홈페이지 발전 과정도 확인할 수 있습니다.
+      </p>
     </section>
 
     <WeatherUiDashboard final-mode />

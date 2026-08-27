@@ -17,8 +17,8 @@ const practiceLinks = [
         <RouterLink class="brand" to="/">
           <span class="brand-icon">🌤️</span>
           <span>
-            <strong>My Weather</strong>
-            <small>Vue Hands-on Portfolio</small>
+            <strong>Skala- My Weather 실습</strong>
+            <small>P106 권하림</small>
           </span>
         </RouterLink>
 
