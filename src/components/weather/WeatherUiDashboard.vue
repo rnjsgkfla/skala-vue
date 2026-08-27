@@ -216,6 +216,7 @@ const searchCity = async () => {
 
     if (existingCity) {
       await openDetails(existingCity, false)
+      searchQuery.value = ''
       ElMessage.success(`${existingCity.name} 날씨를 검색했습니다.`)
       return
     }
@@ -227,8 +228,8 @@ const searchCity = async () => {
       weatherList.value = [city, ...weatherList.value]
     }
 
-    searchQuery.value = (duplicateCity ?? city).name
     await openDetails(duplicateCity ?? city, false)
+    searchQuery.value = ''
     ElMessage.success(`${city.name} 날씨를 검색했습니다.`)
   } catch (error) {
     ElMessage.error(getWeatherErrorMessage(error))
@@ -354,7 +355,7 @@ onMounted(loadWeather)
 
     <div class="section-heading">
       <div>
-        <h3>지역별 현재 날씨</h3>
+        <h3>{{ finalMode ? '지역별 현재 날씨 - 기본: 서울, 수원, 부산, 제주' : '지역별 현재 날씨' }}</h3>
         <span v-if="formattedLastUpdatedAt">마지막 갱신 {{ formattedLastUpdatedAt }}</span>
       </div>
       <el-button type="primary" :loading="isLoading" @click="loadWeather(true)"> 새로고침 </el-button>
