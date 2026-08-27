@@ -140,7 +140,7 @@ const toggleFavorite = async (city) => {
   ElMessage.success(wasFavorite ? `${city.name}을 즐겨찾기에서 해제했습니다.` : `${city.name}을 즐겨찾기에 추가했습니다.`)
 
   if (!wasFavorite) {
-    await openDetails(city)
+    await openDetails(city, false)
   }
 }
 
@@ -207,18 +207,19 @@ const loadWeather = async (showFeedback = false) => {
 const searchCity = async () => {
   const query = searchQuery.value.trim()
 
-  if (!query || !props.finalMode) return
-
-  const existingCity = weatherList.value.find((city) => city.name.toLowerCase() === query.toLowerCase())
-
-  if (existingCity) {
-    await openDetails(existingCity)
-    return
-  }
+  if (!query || !props.finalMode || isSearchLoading.value) return
 
   isSearchLoading.value = true
 
   try {
+    const existingCity = weatherList.value.find((city) => city.name.toLowerCase() === query.toLowerCase())
+
+    if (existingCity) {
+      await openDetails(existingCity, false)
+      ElMessage.success(`${existingCity.name} 날씨를 검색했습니다.`)
+      return
+    }
+
     const city = await fetchWeatherByQuery(query)
     const duplicateCity = weatherList.value.find((item) => item.id === city.id || item.query.toLowerCase() === city.query.toLowerCase())
 
@@ -227,8 +228,8 @@ const searchCity = async () => {
     }
 
     searchQuery.value = (duplicateCity ?? city).name
+    await openDetails(duplicateCity ?? city, false)
     ElMessage.success(`${city.name} 날씨를 검색했습니다.`)
-    await openDetails(duplicateCity ?? city)
   } catch (error) {
     ElMessage.error(getWeatherErrorMessage(error))
   } finally {
@@ -236,7 +237,7 @@ const searchCity = async () => {
   }
 }
 
-const openDetails = async (city) => {
+const openDetails = async (city, showFeedback = true) => {
   selectedCity.value = city
   forecast.value = []
   airQuality.value = null
@@ -247,7 +248,9 @@ const openDetails = async (city) => {
     const details = await fetchWeatherDetails(city)
     forecast.value = details.forecast
     airQuality.value = details.airQuality
-    ElMessage.success(`${city.name} 상세 정보를 불러왔습니다.`)
+    if (showFeedback) {
+      ElMessage.success(`${city.name} 상세 정보를 불러왔습니다.`)
+    }
   } catch (error) {
     detailErrorMessage.value = getWeatherErrorMessage(error)
     ElMessage.error('상세 정보를 불러오지 못했습니다.')
