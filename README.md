@@ -129,6 +129,71 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 - `src/App.vue`: Store 단계 Navigation Bar와 `UnitToggler`
 - `src/main.js`: Pinia 인스턴스 주입
 
+## 06. Weather Axios
+
+### 사용한 API
+
+| 제공 서비스 | API | 활용 기능 |
+| --- | --- | --- |
+| OpenWeather | Current Weather API | 서울, 수원, 부산, 제주의 실제 현재 날씨 조회 |
+| OpenWeather | 5 day / 3 hour Forecast API | 선택한 도시의 5일 예보 조회 |
+| Open-Meteo | Air Quality API | 선택한 도시의 US AQI, PM10, PM2.5 조회 |
+
+Open-Meteo는 OpenWeather와 별개의 외부 서비스입니다. 날씨만 제공하던 애플리케이션에 대기질 정보를 추가하기 위해 기타 외부 API로 연동했습니다.
+
+### 실습한 내용
+
+- Axios로 외부 API에 `GET` 요청을 보내 실제 데이터를 가져왔습니다.
+- `async/await`와 `try/catch/finally`로 요청 성공, 오류, 로딩 상태를 관리했습니다.
+- `Promise.all()`로 여러 도시의 현재 날씨를 병렬 요청하고, 상세보기에서는 5일 예보와 대기질을 함께 요청했습니다.
+- API 키는 코드에 직접 작성하지 않고 `.env.local`의 `VITE_OPENWEATHER_API_KEY` 환경 변수로 관리했습니다.
+
+### API 요청과 데이터 활용
+
+OpenWeather 요청에는 도시를 지정하는 `q`, API 키인 `appid`, 섭씨 단위인 `units=metric`, 한국어 응답을 위한 `lang=kr`을 Query Parameter로 전달합니다. Postman에서도 같은 값을 `Params` 탭에 입력해 원본 JSON 응답을 확인할 수 있습니다.
+
+응답 데이터에서는 다음 값을 추출해 사용합니다.
+
+| JSON 경로 | 사용 내용 |
+| --- | --- |
+| `main.temp` | 현재 기온 |
+| `main.humidity` | 습도 |
+| `wind.speed` | 풍속 |
+| `coord.lat`, `coord.lon` | 대기질 조회에 사용할 위도와 경도 |
+| `weather[0].description` | 첫 번째 날씨 설명 |
+
+`weather`는 배열이므로 첫 번째 날씨 정보는 `weather[0]`으로 접근합니다. 프로젝트에서는 Optional Chaining을 사용해 해당 값이 없을 때 발생할 수 있는 오류도 방지했습니다.
+
+### 5일 예보 데이터 가공
+
+OpenWeather Forecast API는 하루에 한 건이 아니라 3시간 간격의 예보를 `list` 배열로 반환합니다. 모든 값을 표시하지 않고 다음 과정으로 날짜별 대표 예보를 선택했습니다.
+
+1. `dt_txt`에서 날짜와 시간을 분리합니다.
+2. 각 예보 시간과 정오 12시의 차이를 계산합니다.
+3. 같은 날짜 중 정오에 가장 가까운 항목 하나만 `Map`에 저장합니다.
+4. 날짜별 대표 예보 중 앞의 5개를 화면에 표시합니다.
+
+12시 데이터가 있으면 그 값이 선택되고, 없다면 9시나 15시처럼 정오에 가장 가까운 시간의 데이터가 선택됩니다.
+
+### 개인 커스터마이징
+
+- 외부 서비스인 Open-Meteo 대기질 API를 추가해 날씨와 함께 US AQI, PM10, PM2.5를 확인할 수 있게 했습니다.
+- AQI 수치를 좋음, 보통, 민감군 주의, 나쁨, 매우 나쁨으로 구분했습니다.
+- OpenWeather의 어색한 직역 표현을 자연스러운 한국어 날씨 표현으로 변환했습니다.
+- 새로고침 버튼, 마지막 갱신 시각, API 오류별 안내와 다시 시도 기능을 추가했습니다.
+- 기존 Pinia Store를 재사용해 현재 날씨와 5일 예보의 섭씨·화씨 단위를 함께 변경하도록 했습니다.
+
+### 환경 변수 설정
+
+`.env.example`을 복사해 `.env.local`을 만들고 `VITE_OPENWEATHER_API_KEY`에 발급받은 키를 입력합니다. API 키가 포함된 `.env.local`은 Git에 커밋하지 않습니다.
+
+### 관련 파일
+
+- `src/services/weatherApi.js`: Axios 인스턴스, API 요청, 응답 데이터 가공
+- `src/components/weather/WeatherAxiosDashboard.vue`: 실시간 날씨, 예보, 대기질 UI와 요청 상태 관리
+- `src/App.vue`: 여섯 번째 Axios 실습 영역
+- `.env.example`: API 키 환경 변수 예시
+
 ## 프로젝트 실행
 
 ```sh

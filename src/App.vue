@@ -1,5 +1,6 @@
 <script setup>
 import WeatherExercises from '@/components/weather/WeatherExercises.vue'
+import WeatherAxiosDashboard from '@/components/weather/WeatherAxiosDashboard.vue'
 import UnitToggler from '@/components/weather/UnitToggler.vue'
 </script>
 
@@ -38,23 +39,30 @@ import UnitToggler from '@/components/weather/UnitToggler.vue'
       </main>
     </div>
   </section>
+
+  <section class="axios-stage">
+    <h2><span>06</span> Weather Axios</h2>
+    <WeatherAxiosDashboard />
+  </section>
 </template>
 
 <style scoped>
 .router-stage,
-.store-stage {
+.store-stage,
+.axios-stage {
   width: min(720px, calc(100% - 32px));
   margin: 36px auto 0;
   padding: 28px 0 36px;
   border-top: 1px solid #cbd5e1;
 }
 
-.store-stage {
+.axios-stage {
   padding-bottom: 80px;
 }
 
 .router-stage > h2,
-.store-stage > h2 {
+.store-stage > h2,
+.axios-stage > h2 {
   width: min(600px, 100%);
   margin: 0 auto 20px;
   color: #172033;
@@ -62,7 +70,8 @@ import UnitToggler from '@/components/weather/UnitToggler.vue'
 }
 
 .router-stage > h2 span,
-.store-stage > h2 span {
+.store-stage > h2 span,
+.axios-stage > h2 span {
   display: inline-grid;
   width: 32px;
   height: 32px;
