@@ -21,7 +21,7 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 ### 관련 파일
 
 - `src/components/weather/WeatherMockup.vue`: Weather Mockup 실습 코드
-- `src/views/WeatherHomeView.vue`: 단계별 실습 컴포넌트를 보여주는 페이지
+- `src/components/weather/WeatherExercises.vue`: 단계별 실습 컴포넌트를 보여주는 영역
 
 ## 02. Weather Composition
 
@@ -44,7 +44,7 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 ### 관련 파일
 
 - `src/components/weather/WeatherComposition.vue`: Composition API를 적용한 날씨 실습 코드
-- `src/views/WeatherHomeView.vue`: Mockup과 Composition 실습을 순서대로 보여주는 페이지
+- `src/components/weather/WeatherExercises.vue`: Mockup과 Composition 실습을 순서대로 보여주는 영역
 
 ## 03. Weather Component
 
@@ -70,7 +70,38 @@ Vue.js 강의 자료의 Weather Hands-on 예제를 순서대로 구현하고, �
 - `src/components/weather/SearchBar.vue`: 검색어 입력 컴포넌트
 - `src/components/weather/WeatherCard.vue`: 도시별 날씨 카드 컴포넌트
 - `src/components/weather/TemperatureFilter.vue`: 개인 추가 온도 필터 컴포넌트
-- `src/views/WeatherHomeView.vue`: 세 단계의 실습을 순서대로 보여주는 페이지
+- `src/components/weather/WeatherExercises.vue`: 세 단계의 실습을 순서대로 보여주는 영역
+
+## 04. Weather Router
+
+### 실습한 내용
+
+- Vue Router를 설치하고 `main.js`에서 애플리케이션에 Router 인스턴스를 주입했습니다.
+- `App.vue`에 `RouterLink` 내비게이션과 현재 경로의 화면을 출력하는 `RouterView`를 배치했습니다.
+- `/`, `/about`, `/weather/:cityId` 경로와 존재하지 않는 주소를 처리하는 Catch-all Route를 설정했습니다.
+- `WeatherHomeView`를 `WeatherParent` 구조를 참고한 라우트 메인 화면으로 구성했습니다.
+- 카드의 상세보기 이벤트에서 `router.push()`를 호출해 도시 ID가 포함된 동적 경로로 이동하도록 변경했습니다.
+- `WeatherDetailView`에서 `route.params.cityId`를 읽고 마운트 시점에 해당 도시의 Mock 상세 데이터를 선택했습니다.
+- 서비스 소개 View와 잘못된 주소를 안내하는 Not Found View를 작성했습니다.
+
+### 개인 커스터마이징
+
+- 검색어를 URL의 `?search=` Query String과 동기화해 Router 상태 변화를 확인할 수 있게 했습니다.
+- 필수 페이지 외에 `/guide` 경로와 `WeatherGuideView`를 추가해 검색, 온도 필터, 상세보기 사용법을 안내했습니다.
+- 이전 Mockup, Composition, Component 실습은 `WeatherExercises`에 보존하고 Router 실습과 한 페이지에서 비교할 수 있게 했습니다.
+- 기본 데이터에 추가했던 제주도 상세 기상 정보도 동적 상세 페이지에서 확인할 수 있게 했습니다.
+
+### 관련 파일
+
+- `src/router/index.js`: 경로와 View 매핑
+- `src/App.vue`: Router 내비게이션과 `RouterView`
+- `src/main.js`: Router 인스턴스 주입
+- `src/views/WeatherHomeView.vue`: 라우터용 날씨 메인 화면
+- `src/views/WeatherDetailView.vue`: 도시별 동적 상세 화면
+- `src/views/WeatherAboutView.vue`: 서비스 소개 화면
+- `src/views/NotFoundView.vue`: Catch-all 안내 화면
+- `src/views/WeatherGuideView.vue`: 개인 추가 이용 안내 화면
+- `src/components/weather/WeatherExercises.vue`: 이전 세 단계 실습 모음
 
 ## 프로젝트 실행
 
