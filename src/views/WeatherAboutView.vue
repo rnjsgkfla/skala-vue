@@ -17,7 +17,7 @@ const router = useRouter()
       </ul>
     </div>
 
-    <button type="button" @click="router.push('/')">대시보드 홈으로 이동</button>
+    <button type="button" @click="router.push('/practice/04')">Router 실습으로 돌아가기</button>
   </div>
 </template>
 

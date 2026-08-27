@@ -15,7 +15,7 @@ const router = useRouter()
       <li><strong>상세보기</strong><span>도시별 습도와 풍속을 확인합니다.</span></li>
     </ol>
 
-    <button type="button" @click="router.push('/')">직접 사용해 보기</button>
+    <button type="button" @click="router.push('/practice/04')">Router 실습으로 돌아가기</button>
   </div>
 </template>
 

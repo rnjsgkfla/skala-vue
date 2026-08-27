@@ -49,6 +49,12 @@ const displayTemp = computed(() => {
   return configStore.unit === 'fahrenheit' ? Math.round((rawTemp * 9) / 5 + 32) : rawTemp
 })
 
+const backPath = computed(() => {
+  const from = route.query.from
+
+  return typeof from === 'string' && from.startsWith('/practice/') ? from : '/'
+})
+
 onMounted(() => {
   cityData.value = mockDetails[route.params.cityId] ?? null
 })
@@ -70,9 +76,7 @@ onMounted(() => {
 
     <p v-else class="empty-message">해당 도시의 상세 데이터가 존재하지 않습니다.</p>
 
-    <button type="button" class="back-button" @click="router.push('/')">
-      ← 메인 대시보드로 돌아가기
-    </button>
+    <button type="button" class="back-button" @click="router.push(backPath)">← 이전 실습 화면으로 돌아가기</button>
   </div>
 </template>
 

@@ -24,9 +24,7 @@ const onlyHotCities = ref(false)
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
 
-  let result = query
-    ? weatherList.value.filter((item) => item.name.includes(query))
-    : weatherList.value
+  let result = query ? weatherList.value.filter((item) => item.name.includes(query)) : weatherList.value
 
   if (onlyHotCities.value) {
     result = result.filter((item) => item.temp >= 25)
@@ -35,9 +33,7 @@ const filteredWeatherList = computed(() => {
   return result
 })
 
-const hotCityCount = computed(
-  () => weatherList.value.filter((item) => item.temp >= 25).length,
-)
+const hotCityCount = computed(() => weatherList.value.filter((item) => item.temp >= 25).length)
 
 // 페이지에 다시 들어왔을 때 URL의 검색어를 입력 상태로 복원합니다.
 onMounted(() => {
@@ -57,15 +53,11 @@ watch(searchQuery, (newQuery) => {
 })
 
 watch(onlyHotCities, (isEnabled) => {
-  selectedCityInfo.value = isEnabled
-    ? '25도 이상인 도시만 표시합니다.'
-    : '전체 온도의 도시를 표시합니다.'
+  selectedCityInfo.value = isEnabled ? '25도 이상인 도시만 표시합니다.' : '전체 온도의 도시를 표시합니다.'
 })
 
 watchEffect(() => {
-  console.log(
-    `[watchEffect] 검색어 '${searchQuery.value}'의 결과는 ${filteredWeatherList.value.length}개입니다.`,
-  )
+  console.log(`[watchEffect] 검색어 '${searchQuery.value}'의 결과는 ${filteredWeatherList.value.length}개입니다.`)
 })
 
 const clearSearch = () => {
@@ -75,24 +67,19 @@ const clearSearch = () => {
 
 // alert 대신 동적 경로로 이동해 상세 View를 보여줍니다.
 const handleDetailJump = (cityId) => {
-  router.push(`/weather/${cityId}`)
+  router.push({
+    path: `/weather/${cityId}`,
+    query: { from: route.path },
+  })
 }
 </script>
 
 <template>
   <div class="dashboard-wrapper">
     <BaseDashboardCard>
-      <SearchBar
-        :current-query="searchQuery"
-        @update-query="(query) => (searchQuery = query)"
-        @clear-query="clearSearch"
-      />
+      <SearchBar :current-query="searchQuery" @update-query="(query) => (searchQuery = query)" @clear-query="clearSearch" />
 
-      <TemperatureFilter
-        :only-hot-cities="onlyHotCities"
-        :hot-city-count="hotCityCount"
-        @update-only-hot="(isEnabled) => (onlyHotCities = isEnabled)"
-      />
+      <TemperatureFilter :only-hot-cities="onlyHotCities" :hot-city-count="hotCityCount" @update-only-hot="(isEnabled) => (onlyHotCities = isEnabled)" />
     </BaseDashboardCard>
 
     <BaseDashboardCard>
@@ -101,17 +88,9 @@ const handleDetailJump = (cityId) => {
         <span>{{ filteredWeatherList.length }}개 도시</span>
       </div>
 
-      <WeatherCard
-        v-for="item in filteredWeatherList"
-        :key="item.id"
-        :city-item="item"
-        @select-card="(message) => (selectedCityInfo = message)"
-        @click-detail="handleDetailJump(item.id)"
-      />
+      <WeatherCard v-for="item in filteredWeatherList" :key="item.id" :city-item="item" @select-card="(message) => (selectedCityInfo = message)" @click-detail="handleDetailJump(item.id)" />
 
-      <p v-if="filteredWeatherList.length === 0" class="empty-message">
-        😭 검색 결과와 일치하는 도시가 없습니다.
-      </p>
+      <p v-if="filteredWeatherList.length === 0" class="empty-message">😭 검색 결과와 일치하는 도시가 없습니다.</p>
     </BaseDashboardCard>
 
     <div class="status-bar">

@@ -1,134 +1,182 @@
 <script setup>
-import WeatherExercises from '@/components/weather/WeatherExercises.vue'
-import WeatherAxiosDashboard from '@/components/weather/WeatherAxiosDashboard.vue'
-import WeatherUiDashboard from '@/components/weather/WeatherUiDashboard.vue'
-import UnitToggler from '@/components/weather/UnitToggler.vue'
+const practiceLinks = [
+  { stage: '01', label: 'Mockup' },
+  { stage: '02', label: 'Composition' },
+  { stage: '03', label: 'Component' },
+  { stage: '04', label: 'Router' },
+  { stage: '05', label: 'Store' },
+  { stage: '06', label: 'Axios' },
+  { stage: '07', label: 'UI Library' },
+]
 </script>
 
 <template>
-  <WeatherExercises />
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-inner">
+        <RouterLink class="brand" to="/">
+          <span class="brand-icon">🌤️</span>
+          <span>
+            <strong>My Weather</strong>
+            <small>Vue Hands-on Portfolio</small>
+          </span>
+        </RouterLink>
 
-  <section class="router-stage">
-    <h2><span>04</span> Weather Router</h2>
+        <nav class="stage-navigation" aria-label="날씨 실습 단계 이동">
+          <RouterLink class="final-link" to="/">최종 화면</RouterLink>
+          <RouterLink v-for="item in practiceLinks" :key="item.stage" :to="`/practice/${item.stage}`">
+            <b>{{ item.stage }}</b>
+            <span>{{ item.label }}</span>
+          </RouterLink>
+        </nav>
+      </div>
+    </header>
 
-    <div class="router-shell">
-      <nav class="navigation-bar" aria-label="날씨 서비스 메뉴">
-        <RouterLink to="/">🌦️ 날씨 대시보드</RouterLink>
-        <RouterLink to="/about">ℹ️ 서비스 소개</RouterLink>
-        <RouterLink to="/guide">🧭 이용 안내</RouterLink>
-      </nav>
+    <main class="app-content">
+      <RouterView />
+    </main>
 
-      <main class="route-content">
-        <RouterView />
-      </main>
-    </div>
-  </section>
-
-  <section class="store-stage">
-    <h2><span>05</span> Weather Store</h2>
-
-    <div class="router-shell">
-      <nav class="navigation-bar store-navigation" aria-label="날씨 Store 서비스 메뉴">
-        <RouterLink to="/">🌦️ 날씨 대시보드</RouterLink>
-        <RouterLink to="/about">ℹ️ 서비스 소개</RouterLink>
-        <RouterLink to="/guide">🧭 이용 안내</RouterLink>
-        <UnitToggler />
-      </nav>
-
-      <main class="route-content">
-        <RouterView />
-      </main>
-    </div>
-  </section>
-
-  <section class="axios-stage">
-    <h2><span>06</span> Weather Axios</h2>
-    <WeatherAxiosDashboard />
-  </section>
-
-  <section class="ui-stage">
-    <h2><span>07</span> Weather UI Library</h2>
-    <WeatherUiDashboard />
-  </section>
+    <footer class="app-footer">Vue 3 · Pinia · Axios · Element Plus · OpenWeather · Open-Meteo</footer>
+  </div>
 </template>
 
 <style scoped>
-.router-stage,
-.store-stage,
-.axios-stage,
-.ui-stage {
-  width: min(720px, calc(100% - 32px));
-  margin: 36px auto 0;
-  padding: 28px 0 36px;
-  border-top: 1px solid #cbd5e1;
+.app-shell {
+  min-height: 100vh;
 }
 
-.ui-stage {
-  padding-bottom: 80px;
-}
-
-.router-stage > h2,
-.store-stage > h2,
-.axios-stage > h2,
-.ui-stage > h2 {
-  width: min(600px, 100%);
-  margin: 0 auto 20px;
-  color: #172033;
-  font-size: 1.35rem;
-}
-
-.router-stage > h2 span,
-.store-stage > h2 span,
-.axios-stage > h2 span,
-.ui-stage > h2 span {
-  display: inline-grid;
-  width: 32px;
-  height: 32px;
-  margin-right: 6px;
-  place-items: center;
+.app-header {
+  position: sticky;
+  z-index: 100;
+  top: 0;
   color: #ffffff;
-  font-size: 0.8rem;
-  background: #2563eb;
-  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.96);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  backdrop-filter: blur(14px);
 }
 
-.router-shell {
-  width: min(600px, 100%);
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  width: min(1180px, calc(100% - 32px));
+  min-height: 74px;
   margin: 0 auto;
 }
 
-.navigation-bar {
+.brand {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px 20px;
-  padding: 14px;
-  margin-bottom: 16px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-}
-
-.navigation-bar a {
-  padding: 5px 0;
-  color: #64748b;
-  font-size: 0.9rem;
-  font-weight: 700;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
   text-decoration: none;
-  border-bottom: 2px solid transparent;
 }
 
-.navigation-bar a:hover,
-.navigation-bar a.router-link-exact-active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
+.brand-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  font-size: 1.3rem;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  border-radius: 13px;
 }
 
-.store-navigation {
-  justify-content: flex-start;
+.brand strong,
+.brand small {
+  display: block;
 }
 
-.route-content {
-  min-height: 240px;
+.brand small {
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 0.66rem;
+}
+
+.stage-navigation {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  gap: 5px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.stage-navigation a {
+  display: grid;
+  flex: 0 0 auto;
+  min-width: 65px;
+  min-height: 48px;
+  padding: 7px 9px;
+  place-content: center;
+  color: #94a3b8;
+  font-size: 0.7rem;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 9px;
+  transition: 0.2s ease;
+}
+
+.stage-navigation a b {
+  color: #cbd5e1;
+  font-size: 0.78rem;
+}
+
+.stage-navigation a:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stage-navigation a.router-link-exact-active {
+  color: #ffffff;
+  background: #2563eb;
+}
+
+.stage-navigation a.router-link-exact-active b {
+  color: #ffffff;
+}
+
+.stage-navigation .final-link {
+  min-width: 78px;
+  color: #dbeafe;
+  font-weight: 800;
+  background: rgba(37, 99, 235, 0.16);
+}
+
+.app-content {
+  min-height: calc(100vh - 144px);
+}
+
+.app-footer {
+  padding: 25px 16px;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .header-inner {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px 8px;
+  }
+
+  .brand small {
+    display: none;
+  }
+
+  .stage-navigation {
+    width: 100%;
+    padding-bottom: 4px;
+  }
+
+  .stage-navigation a {
+    min-width: 60px;
+    min-height: 42px;
+  }
 }
 </style>

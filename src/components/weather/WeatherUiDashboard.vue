@@ -11,7 +11,9 @@ import {
   ElEmpty,
   ElInput,
   ElMessage,
+  ElOption,
   ElRow,
+  ElSelect,
   ElSkeleton,
   ElStatistic,
   ElSwitch,
@@ -24,11 +26,29 @@ import UnitToggler from '@/components/weather/UnitToggler.vue'
 import { fetchWeatherDashboard, fetchWeatherDetails, getWeatherErrorMessage } from '@/services/weatherApi'
 import { useConfigStore } from '@/stores/configStore'
 
+const props = defineProps({
+  finalMode: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 const configStore = useConfigStore()
+
+const loadFavoriteIds = () => {
+  try {
+    return JSON.parse(localStorage.getItem('weather-favorite-cities') ?? '[]')
+  } catch {
+    return []
+  }
+}
 
 const weatherList = ref([])
 const searchQuery = ref('')
 const onlyHotCities = ref(false)
+const onlyFavoriteCities = ref(false)
+const sortOrder = ref('default')
+const favoriteCityIds = ref(loadFavoriteIds())
 const selectedCity = ref(null)
 const forecast = ref([])
 const airQuality = ref(null)
@@ -41,14 +61,46 @@ const lastUpdatedAt = ref(null)
 const filteredWeatherList = computed(() => {
   const normalizedQuery = searchQuery.value.trim().toLowerCase()
 
-  return weatherList.value.filter((city) => {
+  const result = weatherList.value.filter((city) => {
     const matchesQuery = city.name.toLowerCase().includes(normalizedQuery)
     const matchesTemperature = !onlyHotCities.value || city.temp >= 25
-    return matchesQuery && matchesTemperature
+    const matchesFavorite = !props.finalMode || !onlyFavoriteCities.value || favoriteCityIds.value.includes(city.id)
+
+    return matchesQuery && matchesTemperature && matchesFavorite
   })
+
+  if (sortOrder.value === 'temp-desc') {
+    return [...result].sort((a, b) => b.temp - a.temp)
+  }
+
+  if (sortOrder.value === 'temp-asc') {
+    return [...result].sort((a, b) => a.temp - b.temp)
+  }
+
+  return result
 })
 
 const hotCityCount = computed(() => weatherList.value.filter((city) => city.temp >= 25).length)
+
+const averageTemperature = computed(() => {
+  if (!weatherList.value.length) return 0
+
+  const total = weatherList.value.reduce((sum, city) => sum + city.temp, 0)
+  return Math.round(total / weatherList.value.length)
+})
+
+const hottestCity = computed(() => {
+  return weatherList.value.reduce((hottest, city) => (!hottest || city.temp > hottest.temp ? city : hottest), null)
+})
+
+const isFavorite = (cityId) => favoriteCityIds.value.includes(cityId)
+
+const toggleFavorite = (city) => {
+  favoriteCityIds.value = isFavorite(city.id) ? favoriteCityIds.value.filter((id) => id !== city.id) : [...favoriteCityIds.value, city.id]
+
+  localStorage.setItem('weather-favorite-cities', JSON.stringify(favoriteCityIds.value))
+  ElMessage.success(isFavorite(city.id) ? `${city.name}을 즐겨찾기에 추가했습니다.` : `${city.name}을 즐겨찾기에서 해제했습니다.`)
+}
 
 const formattedLastUpdatedAt = computed(() => {
   if (!lastUpdatedAt.value) return ''
@@ -134,9 +186,15 @@ onMounted(loadWeather)
     <el-card class="control-card" shadow="never">
       <div class="dashboard-header">
         <div>
-          <el-tag type="primary" effect="plain" round>Element Plus</el-tag>
-          <h3>🌤️ Weather UI Dashboard</h3>
-          <p>실시간 날씨와 대기질을 UI 컴포넌트로 확인합니다.</p>
+          <el-tag type="primary" effect="plain" round>
+            {{ finalMode ? 'Final Application' : 'Element Plus' }}
+          </el-tag>
+          <h3>
+            {{ finalMode ? '🌤️ My Weather Center' : '🌤️ Weather UI Dashboard' }}
+          </h3>
+          <p>
+            {{ finalMode ? '즐겨찾기와 정렬로 나만의 날씨를 관리합니다.' : '실시간 날씨와 대기질을 UI 컴포넌트로 확인합니다.' }}
+          </p>
         </div>
         <UnitToggler />
       </div>
@@ -153,7 +211,39 @@ onMounted(loadWeather)
           <el-switch v-model="onlyHotCities" :active-text="`더운 도시만 (${hotCityCount})`" />
         </el-col>
       </el-row>
+
+      <el-row v-if="finalMode" :gutter="12" class="final-controls" align="middle">
+        <el-col :xs="24" :sm="12">
+          <el-select v-model="sortOrder" aria-label="도시 정렬 순서">
+            <el-option label="기본 순서" value="default" />
+            <el-option label="기온 높은 순" value="temp-desc" />
+            <el-option label="기온 낮은 순" value="temp-asc" />
+          </el-select>
+        </el-col>
+        <el-col :xs="24" :sm="12" class="filter-column favorite-filter">
+          <el-switch v-model="onlyFavoriteCities" :active-text="`즐겨찾기만 (${favoriteCityIds.length})`" />
+        </el-col>
+      </el-row>
     </el-card>
+
+    <el-row v-if="finalMode && !isLoading && weatherList.length" :gutter="12" class="summary-grid">
+      <el-col :xs="24" :sm="8">
+        <el-card shadow="never" class="summary-card">
+          <span>조회 도시</span><strong>{{ weatherList.length }}곳</strong>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="8">
+        <el-card shadow="never" class="summary-card">
+          <span>평균 기온</span>
+          <strong>{{ displayTemp(averageTemperature) }}{{ configStore.unitSymbol }}</strong>
+        </el-card>
+      </el-col>
+      <el-col :xs="24" :sm="8">
+        <el-card shadow="never" class="summary-card">
+          <span>가장 더운 도시</span><strong>{{ hottestCity?.name ?? '-' }}</strong>
+        </el-card>
+      </el-col>
+    </el-row>
 
     <div class="section-heading">
       <div>
@@ -184,9 +274,14 @@ onMounted(loadWeather)
             <template #header>
               <div class="card-header">
                 <strong>{{ city.name }}</strong>
-                <el-tag :type="city.temp >= 25 ? 'danger' : 'primary'" effect="light">
-                  {{ city.temp >= 25 ? '더움' : '선선함' }}
-                </el-tag>
+                <div class="card-actions">
+                  <el-button v-if="finalMode" circle text :aria-label="`${city.name} 즐겨찾기 전환`" @click="toggleFavorite(city)">
+                    {{ isFavorite(city.id) ? '★' : '☆' }}
+                  </el-button>
+                  <el-tag :type="city.temp >= 25 ? 'danger' : 'primary'" effect="light">
+                    {{ city.temp >= 25 ? '더움' : '선선함' }}
+                  </el-tag>
+                </div>
               </div>
             </template>
 
@@ -296,6 +391,43 @@ onMounted(loadWeather)
   justify-content: flex-end;
 }
 
+.final-controls {
+  padding-top: 14px;
+  margin-top: 14px;
+  border-top: 1px solid #ebeef5;
+}
+
+.final-controls :deep(.el-select) {
+  width: 100%;
+}
+
+.summary-grid {
+  margin-bottom: 8px;
+}
+
+.summary-card {
+  margin-bottom: 12px;
+  border: 0;
+  background: linear-gradient(145deg, #eff6ff, #ffffff);
+}
+
+.summary-card :deep(.el-card__body) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.summary-card span {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.summary-card strong {
+  color: #1d4ed8;
+  font-size: 1.05rem;
+}
+
 .section-heading {
   margin: 22px 0 12px;
 }
@@ -307,6 +439,17 @@ h4 {
 
 .weather-ui-card {
   margin-bottom: 14px;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-actions :deep(.el-button) {
+  color: #f59e0b;
+  font-size: 1.25rem;
 }
 
 .temperature {
@@ -352,6 +495,10 @@ h4 {
 
   .filter-column {
     justify-content: flex-start;
+    margin-top: 12px;
+  }
+
+  .favorite-filter {
     margin-top: 12px;
   }
 
